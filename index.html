@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Product Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <style>
+        :root {
+            /* Primary Colors */
+            --primary-50: #eef2ff;
+            --primary-100: #e0e7ff;
+            --primary-500: #6366f1;
+            --primary-600: #4f46e5;
+            --primary-700: #4338ca;
+            --primary-900: #312e81;
+            
+            /* Secondary Colors */
+            --secondary-50: #ecfdf5;
+            --secondary-100: #d1fae5;
+            --secondary-500: #10b981;
+            --secondary-600: #059669;
+            --secondary-700: #047857;
+            
+            /* Accent Colors */
+            --accent-50: #fffbeb;
+            --accent-100: #fef3c7;
+            --accent-500: #f59e0b;
+            --accent-600: #d97706;
+            
+            /* Neutral Colors */
+            --white: #ffffff;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Status Colors */
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            
+            /* Spacing */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            
+            /* Transitions */
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-50) 0%, var(--secondary-50) 100%);
+            color: var(--gray-900);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25% 25%, var(--primary-100) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, var(--secondary-100) 0%, transparent 50%);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-8);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-16);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .header-content {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-12);
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-4);
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            color: var(--gray-600);
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: var(--space-8);
+            opacity: 0.8;
+        }
+
+        .auth-section {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-8);
+            align-items: start;
+        }
+
+        /* Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-2xl);
+            border-color: var(--primary-200);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-500), var(--secondary-500), var(--accent-500));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            padding: var(--space-8);
+            background: linear-gradient(135deg, var(--gray-50), var(--white));
+            border-bottom: 1px solid var(--gray-200);
+            position: relative;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            letter-spacing: -0.025em;
+        }
+
+        .card-content {
+            padding: var(--space-8);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: var(--space-6);
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: var(--space-3);
+            font-size: 0.875rem;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-4) var(--space-5);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--transition);
+            background: var(--white);
+            font-family: inherit;
+            position: relative;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-input:valid:not(:placeholder-shown) {
+            border-color: var(--success);
+        }
+
+        .form-input:invalid:not(:focus):not(:placeholder-shown) {
+            border-color: var(--error);
+            animation: shake 0.4s ease-in-out;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-4) var(--space-6);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            min-height: 48px;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-500), var(--secondary-600));
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--secondary-600), var(--secondary-700));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--white);
+            border-color: var(--primary-500);
+            color: var(--primary-600);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-sm {
+            padding: var(--space-2) var(--space-4);
+            font-size: 0.75rem;
+            min-height: 36px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+            margin-top: var(--space-8);
+        }
+
+        /* Image URL Container */
+        .image-urls-container {
+            margin-bottom: var(--space-6);
+        }
+
+        .image-url-input {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+            align-items: center;
+            animation: slideInLeft 0.3s ease-out;
+        }
+
+        .image-url-input input {
+            flex: 1;
+        }
+
+        /* Products Container */
+        .products-container {
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: var(--space-2);
+        }
+
+        .products-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .products-container::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: var(--radius);
+        }
+
+        .products-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-400), var(--primary-500));
+            border-radius: var(--radius);
+        }
+
+        .products-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--primary-500), var(--primary-600));
+        }
+
+        /* Product Item */
+        .product-item {
+            padding: var(--space-6);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-5);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .product-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-500), var(--secondary-500));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .product-item:hover {
+            border-color: var(--primary-300);
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-2px);
+        }
+
+        .product-item:hover::before {
+            opacity: 1;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-5);
+        }
+
+        .product-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-3);
+            letter-spacing: -0.025em;
+        }
+
+        .product-category {
+            display: inline-block;
+            padding: var(--space-2) var(--space-4);
+            background: linear-gradient(135deg, var(--primary-100), var(--primary-50));
+            color: var(--primary-700);
+            border-radius: var(--radius-lg);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: 1px solid var(--primary-200);
+        }
+
+        .product-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .product-detail {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+
+        .product-detail strong {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .product-description {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            font-style: italic;
+            margin-top: var(--space-4);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--gray-200);
+            line-height: 1.6;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        /* Loading Styles */
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: var(--space-12);
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary-500);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: var(--space-6);
+            right: var(--space-6);
+            padding: var(--space-5) var(--space-6);
+            border-radius: var(--radius-xl);
+            color: var(--white);
+            font-weight: 600;
+            box-shadow: var(--shadow-2xl);
+            z-index: 1000;
+            transform: translateX(calc(100% + var(--space-6)));
+            transition: var(--transition);
+            max-width: 400px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, var(--success), var(--secondary-600));
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, var(--warning), var(--accent-600));
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-16) var(--space-6);
+            color: var(--gray-500);
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--space-6);
+            opacity: 0.6;
+            color: var(--gray-400);
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-700);
+            margin-bottom: var(--space-3);
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Icon Styles */
+        .icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .required {
+            color: var(--error);
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: var(--space-6);
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-4) var(--space-5) var(--space-4) var(--space-12);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: var(--space-4);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Loading Button Animation */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+            position: relative;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: var(--space-2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container {
+                padding: var(--space-6);
+            }
+            
+            .main-grid {
+                gap: var(--space-6);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-4);
+            }
+
+            .header-content {
+                padding: var(--space-8);
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-6);
+            }
+
+            .card-header,
+            .card-content {
+                padding: var(--space-6);
+            }
+
+            .product-item {
+                padding: var(--space-5);
+            }
+
+            .product-header {
+                flex-direction: column;
+                gap: var(--space-4);
+                align-items: stretch;
+            }
+
+            .product-actions {
+                align-self: stretch;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .image-url-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .auth-section {
+                flex-direction: column;
+            }
+
+            .product-details {
+                grid-template-columns: 1fr;
+            }
+
+            .notification {
+                right: var(--space-4);
+                left: var(--space-4);
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .card-header,
+            .card-content {
+                padding: var(--space-4);
+            }
+
+            .product-item {
+                padding: var(--space-4);
+            }
+        }
+
+        /* Focus Visible for Better Accessibility */
+        .btn:focus-visible,
+        .form-input:focus-visible {
+            outline: 2px solid var(--primary-500);
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .card {
+                border: 2px solid var(--gray-400);
+            }
+            
+            .btn {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1>🚀 Product Dashboard</h1>
+                <p>Transform your inventory management with our modern, intuitive platform</p>
+                <div class="auth-section">
+                    <button id="googleSignIn" class="btn btn-primary">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                            <polyline points="10,17 15,12 10,7"/>
+                            <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                        Sign In with Google
+                    </button>
+                    <button id="googleSignOut" class="btn btn-outline" style="display: none;">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                            <polyline points="16,17 21,12 16,7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Product Form Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 5v14m7-7H5"/>
+                        </svg>
+                        <span id="formTitle">Add Product</span>
+                    </h2>
+                </div>
+                <div class="card-content">
+                    <form id="productForm">
+                        <input type="hidden" id="productId">
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="productName">
+                                Product Name <span class="required">*</span>
+                            </label>
+                            <input type="text" id="productName" class="form-input" 
+                                   placeholder="Enter an amazing product name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="productCategory">
+                                Category <span class="required">*</span>
+                            </label>
+                            <input type="text" id="productCategory" class="form-input" 
+                                   placeholder="e.g., Electronics, Clothing, Books" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="productOriginalPrice">
+                                Original Price (₹)
+                            </label>
+                            <input type="number" id="productOriginalPrice" class="form-input" 
+                                   placeholder="0.00" step="0.01" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="productCurrentPrice">
+                                Current Price (₹) <span class="required">*</span>
+                            </label>
+                            <input type="number" id="productCurrentPrice" class="form-input" 
+                                   placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Product Images <span class="required">*</span>
+                            </label>
+                            <div class="image-urls-container" id="imageUrlsContainer">
+                                <div class="image-url-input">
+                                    <input type="url" class="form-input" 
+                                           placeholder="https://example.com/amazing-product.jpg" required>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="addImageUrlInput()">
+                                        <svg class="icon" viewBox="0 0 24 24">
+                                            <path d="M12 5v14m7-7H5"/>
+                                        </svg>
+                                        Add More
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="productVideoUrl">
+                                Video URL
+                            </label>
+                            <input type="url" id="productVideoUrl" class="form-input" 
+                                   placeholder="https://youtube.com/watch?v=awesome-demo">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="productPromoMessage">
+                                Promotional Message
+                            </label>
+                            <input type="text" id="productPromoMessage" class="form-input" 
+                                   placeholder="e.g., Limited Time Offer! 50% OFF">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="productDescription">
+                                Description
+                            </label>
+                            <textarea id="productDescription" class="form-input" 
+                                      placeholder="Describe your amazing product in detail..." rows="4"></textarea>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="button" id="addBtn" class="btn btn-primary" onclick="addProduct()">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M12 5v14m7-7H5"/>
+                                </svg>
+                                Add Product
+                            </button>
+                            <button type="button" id="updateBtn" class="btn btn-secondary" 
+                                    onclick="updateProduct()" style="display: none;">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                                </svg>
+                                Update Product
+                            </button>
+                            <button type="button" class="btn btn-outline" onclick="clearForm()">
+                                <svg class="icon" viewBox="0 0 24 24">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                </svg>
+                                Clear Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Products List Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                        </svg>
+                        Product Inventory
+                    </h2>
+                    <button class="btn btn-outline btn-sm" onclick="fetchProducts()">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+                <div class="card-content">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <input type="text" id="searchInput" class="search-input" 
+                               placeholder="Search products by name or category..." 
+                               onkeyup="searchProducts()">
+                        <svg class="icon search-icon" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="loading" id="loadingSpinner">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Loading your amazing products...</div>
+                    </div>
+
+                    <!-- Products Container -->
+                    <div class="products-container" id="productList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                                </svg>
+                            </div>
+                            <h3>No products found</h3>
+                            <p>Start building your amazing product catalog by adding your first product!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9M_BjTdF8Wq-gaezYKYim1lyMZZPe-HQ",
+            authDomain: "d-print-bc0e0.firebaseapp.com",
+            projectId: "d-print-bc0e0",
+            storageBucket: "d-print-bc0e0.appspot.com",
+            messagingSenderId: "1035629666186",
+            appId: "1:1035629666186:web:ad996c1fe3e1b997713273"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Global Variables
+        let allProducts = [];
+        let filteredProducts = [];
+
+        // Utility Functions
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        function showLoading(show = true) {
+            const spinner = document.getElementById('loadingSpinner');
+            const productList = document.getElementById('productList');
+
+            if (show) {
+                spinner.style.display = 'flex';
+                productList.style.display = 'none';
+            } else {
+                spinner.style.display = 'none';
+                productList.style.display = 'block';
+            }
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return 'N/A';
+            return `₹${parseFloat(amount).toLocaleString('en-IN', { 
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2 
+            })}`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function setButtonLoading(buttonId, loading = true) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                if (loading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function validateForm() {
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value.trim();
+            const currentPrice = document.getElementById('productCurrentPrice').value;
+            const imageInputs = document.querySelectorAll('#imageUrlsContainer input[type="url"]');
+            const pictureUrls = Array.from(imageInputs)
+                .map(input => input.value.trim())
+                .filter(url => url);
+
+            if (!name || !category || !currentPrice || pictureUrls.length === 0) {
+                showNotification('Please fill in all required fields', 'error');
+                
+                // Add visual feedback to empty required fields
+                if (!name) document.getElementById('productName').classList.add('error');
+                if (!category) document.getElementById('productCategory').classList.add('error');
+                if (!currentPrice) document.getElementById('productCurrentPrice').classList.add('error');
+                
+                // Remove error class after animation
+                setTimeout(() => {
+                    document.querySelectorAll('.form-input.error').forEach(input => {
+                        input.classList.remove('error');
+                    });
+                }, 1000);
+                
+                return false;
+            }
+
+            if (parseFloat(currentPrice) < 0) {
+                showNotification('Price cannot be negative', 'error');
+                document.getElementById('productCurrentPrice').classList.add('error');
+                setTimeout(() => {
+                    document.getElementById('productCurrentPrice').classList.remove('error');
+                }, 1000);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Image URL Management
+        function addImageUrlInput() {
+            const container = document.getElementById('imageUrlsContainer');
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'image-url-input';
+            inputDiv.innerHTML = `
+                <input type="url" class="form-input" placeholder="https://example.com/another-amazing-image.jpg">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeImageUrlInput(this)">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <polyline points="3,6 5,6 21,6"/>
+                        <path d="M19,6v14a2,2 0 01-2,2H7a2,2 0 01-2-2V6"/>
+                    </svg>
+                    Remove
+                </button>
+            `;
+            container.appendChild(inputDiv);
+            
+            // Add entrance animation
+            setTimeout(() => {
+                inputDiv.style.animation = 'slideInLeft 0.3s ease-out';
+            }, 10);
+        }
+
+        function removeImageUrlInput(button) {
+            const container = document.getElementById('imageUrlsContainer');
+            if (container.children.length > 1) {
+                const inputDiv = button.parentElement;
+                inputDiv.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => {
+                    if (inputDiv.parentNode) {
+                        inputDiv.remove();
+                    }
+                }, 300);
+            } else {
+                showNotification('At least one image URL is required', 'warning');
+            }
+        }
+
+        // Search Functionality
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                filteredProducts = [...allProducts];
+            } else {
+                filteredProducts = allProducts.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    (product.category && product.category.toLowerCase().includes(searchTerm)) ||
+                    (product.description && product.description.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            renderProducts(filteredProducts);
+        }
+
+        // API Functions
+        async function fetchProducts() {
+            try {
+                showLoading(true);
+                const user = firebase.auth().currentUser;
+                const idToken = user ? await user.getIdToken() : null;
+
+                const response = await fetch('https://threedprintb.onrender.com/products', {
+                    headers: {
+                        'Authorization': idToken ? `Bearer ${idToken}` : ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const products = await response.json();
+                allProducts = products || [];
+                filteredProducts = [...allProducts];
+                renderProducts(filteredProducts);
+                
+                if (products && products.length > 0) {
+                    showNotification(`Successfully loaded ${products.length} products!`);
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                showNotification('Failed to fetch products. Please try again.', 'error');
+                renderEmptyState('Failed to load products');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderProducts(products) {
+            const productList = document.getElementById('productList');
+
+            if (!products || products.length === 0) {
+                const searchTerm = document.getElementById('searchInput').value.trim();
+                if (searchTerm) {
+                    renderEmptyState('No products match your search');
+                } else {
+                    renderEmptyState();
+                }
+                return;
+            }
+
+            productList.innerHTML = '';
+            
+            products.forEach((product, index) => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product-item';
+                productDiv.style.animationDelay = `${index * 0.1}s`;
+                
+                // Create image preview
+                const imagePreview = product.pictureUrls && product.pictureUrls.length > 0 
+                    ? `<img src="${product.pictureUrls[0]}" alt="${escapeHtml(product.name)}" 
+                            style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--gray-200);" 
+                            onerror="this.style.display='none'">`
+                    : '';
+
+                productDiv.innerHTML = `
+                    <div class="product-header">
+                        <div>
+                            <div class="product-name">${escapeHtml(product.name)}</div>
+                            <span class="product-category">${escapeHtml(product.category || 'Uncategorized')}</span>
+                            ${product.promoMessage ? `<div style="margin-top: 8px; color: var(--accent-600); font-weight: 600; font-size: 0.875rem;">🎉 ${escapeHtml(product.promoMessage)}</div>` : ''}
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
+                            ${imagePreview}
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-sm" onclick="editProduct('${product.id}')">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteProduct('${product.id}')">
+                                    <svg class="icon" viewBox="0 0 24 24">
+                                        <polyline points="3,6 5,6 21,6"/>
+                                        <path d="M19,6v14a2,2 0 01-2,2H7a2,2 0 01-2-2V6"/>
+                                    </svg>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-details">
+                        <div class="product-detail">
+                            <strong>Original Price:</strong> ${formatCurrency(product.originalPrice)}
+                        </div>
+                        <div class="product-detail">
+                            <strong>Current Price:</strong> ${formatCurrency(product.currentPrice)}
+                        </div>
+                        <div class="product-detail">
+                            <strong>Images:</strong> ${product.pictureUrls ? product.pictureUrls.length : 0} image(s)
+                        </div>
+                        <div class="product-detail">
+                            <strong>Video:</strong> ${product.videoUrl ? 
+                                `<a href="${product.videoUrl}" target="_blank" style="color: var(--primary-600); text-decoration: none;">View Video</a>` : 
+                                'No video'}
+                        </div>
+                    </div>
+                    ${product.description ? 
+                        `<div class="product-description">${escapeHtml(product.description)}</div>` : 
+                        ''}
+                `;
+                productList.appendChild(productDiv);
+            });
+        }
+
+        function renderEmptyState(message = null) {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                        </svg>
+                    </div>
+                    <h3>${message ? 'Search Results' : 'No products found'}</h3>
+                    <p>${message || 'Start building your amazing product catalog by adding your first product!'}</p>
+                </div>
+            `;
+        }
+
+        // CRUD Operations
+        async function addProduct() {
+            if (!validateForm()) return;
+
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value.trim();
+            const originalPrice = document.getElementById('productOriginalPrice').value;
+            const currentPrice = document.getElementById('productCurrentPrice').value;
+            const imageUrlInputs = document.querySelectorAll('#imageUrlsContainer input[type="url"]');
+            const videoUrl = document.getElementById('productVideoUrl').value.trim();
+            const promoMessage = document.getElementById('productPromoMessage').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+
+            const pictureUrls = Array.from(imageUrlInputs)
+                .map(input => input.value.trim())
+                .filter(url => url);
+
+            const product = {
+                name,
+                category,
+                originalPrice: originalPrice || null,
+                currentPrice: parseFloat(currentPrice),
+                pictureUrls,
+                videoUrl: videoUrl || null,
+                promoMessage: promoMessage || null,
+                description: description || null
+            };
+
+            try {
+                setButtonLoading('addBtn', true);
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('You must be logged in to add products');
+                }
+
+                const idToken = await user.getIdToken();
+                const response = await fetch('https://threedprintb.onrender.com/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify(product)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showNotification('🎉 Product added successfully!');
+                await fetchProducts();
+                clearForm();
+            } catch (error) {
+                console.error('Error adding product:', error);
+                showNotification('Failed to add product. Please try again.', 'error');
+            } finally {
+                setButtonLoading('addBtn', false);
+            }
+        }
+
+        async function updateProduct() {
+            if (!validateForm()) return;
+
+            const id = document.getElementById('productId').value;
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value.trim();
+            const originalPrice = document.getElementById('productOriginalPrice').value;
+            const currentPrice = document.getElementById('productCurrentPrice').value;
+            const imageUrlInputs = document.querySelectorAll('#imageUrlsContainer input[type="url"]');
+            const videoUrl = document.getElementById('productVideoUrl').value.trim();
+            const promoMessage = document.getElementById('productPromoMessage').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+
+            const pictureUrls = Array.from(imageUrlInputs)
+                .map(input => input.value.trim())
+                .filter(url => url);
+
+            const product = {
+                name,
+                category,
+                originalPrice: originalPrice || null,
+                currentPrice: parseFloat(currentPrice),
+                pictureUrls,
+                videoUrl: videoUrl || null,
+                promoMessage: promoMessage || null,
+                description: description || null
+            };
+
+            try {
+                setButtonLoading('updateBtn', true);
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('You must be logged in to update products');
+                }
+
+                const idToken = await user.getIdToken();
+                const response = await fetch(`https://threedprintb.onrender.com/products/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify(product)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showNotification('✨ Product updated successfully!');
+                await fetchProducts();
+                clearForm();
+            } catch (error) {
+                console.error('Error updating product:', error);
+                showNotification('Failed to update product. Please try again.', 'error');
+            } finally {
+                setButtonLoading('updateBtn', false);
+            }
+        }
+
+        function editProduct(productId) {
+            const product = allProducts.find(p => p.id === productId);
+
+            if (!product) {
+                showNotification('Product not found', 'error');
+                return;
+            }
+
+            // Populate form fields
+            document.getElementById('productId').value = productId;
+            document.getElementById('productName').value = product.name || '';
+            document.getElementById('productCategory').value = product.category || '';
+            document.getElementById('productOriginalPrice').value = product.originalPrice || '';
+            document.getElementById('productCurrentPrice').value = product.currentPrice || '';
+            document.getElementById('productVideoUrl').value = product.videoUrl || '';
+            document.getElementById('productPromoMessage').value = product.promoMessage || '';
+            document.getElementById('productDescription').value = product.description || '';
+
+            // Handle image URLs
+            const imageUrlsContainer = document.getElementById('imageUrlsContainer');
+            imageUrlsContainer.innerHTML = '';
+
+            if (product.pictureUrls && product.pictureUrls.length > 0) {
+                product.pictureUrls.forEach((url, index) => {
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'image-url-input';
+                    inputDiv.innerHTML = `
+                        <input type="url" class="form-input" placeholder="https://example.com/image.jpg" value="${url}">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeImageUrlInput(this)">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <polyline points="3,6 5,6 21,6"/>
+                                <path d="M19,6v14a2,2 0 01-2,2H7a2,2 0 01-2-2V6"/>
+                            </svg>
+                            Remove
+                        </button>
+                    `;
+                    imageUrlsContainer.appendChild(inputDiv);
+                });
+            } else {
+                addImageUrlInput();
+            }
+
+            // Update UI
+            document.getElementById('formTitle').textContent = 'Edit Product';
+            document.getElementById('addBtn').style.display = 'none';
+            document.getElementById('updateBtn').style.display = 'inline-flex';
+
+            // Scroll to form
+            document.querySelector('.card').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+            showNotification(`Editing "${product.name}"`, 'success');
+        }
+
+        async function deleteProduct(id) {
+            const product = allProducts.find(p => p.id === id);
+            const productName = product ? product.name : 'this product';
+            
+            if (!confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('You must be logged in to delete products');
+                }
+
+                const idToken = await user.getIdToken();
+                const response = await fetch(`https://threedprintb.onrender.com/products/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showNotification(`🗑️ "${productName}" deleted successfully!`);
+                await fetchProducts();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                showNotification('Failed to delete product. Please try again.', 'error');
+            }
+        }
+
+        function clearForm() {
+            // Reset form fields
+            document.getElementById('productId').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productOriginalPrice').value = '';
+            document.getElementById('productCurrentPrice').value = '';
+            document.getElementById('productVideoUrl').value = '';
+            document.getElementById('productPromoMessage').value = '';
+            document.getElementById('productDescription').value = '';
+
+            // Reset image URLs container
+            document.getElementById('imageUrlsContainer').innerHTML = `
+                <div class="image-url-input">
+                    <input type="url" class="form-input" placeholder="https://example.com/amazing-product.jpg" required>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addImageUrlInput()">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 5v14m7-7H5"/>
+                        </svg>
+                        Add More
+                    </button>
+                </div>
+            `;
+
+            // Reset UI
+            document.getElementById('formTitle').textContent = 'Add Product';
+            document.getElementById('addBtn').style.display = 'inline-flex';
+            document.getElementById('updateBtn').style.display = 'none';
+
+            // Remove any error states
+            document.querySelectorAll('.form-input.error').forEach(input => {
+                input.classList.remove('error');
+            });
+        }
+
+        // Authentication Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sign In Button
+            document.getElementById('googleSignIn').addEventListener('click', function() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+                
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => {
+                        console.log('User signed in:', result.user);
+                        document.getElementById('googleSignIn').style.display = 'none';
+                        document.getElementById('googleSignOut').style.display = 'inline-flex';
+                        showNotification(`Welcome back, ${result.user.displayName || 'User'}! 🎉`);
+                        fetchProducts();
+                    })
+                    .catch((error) => {
+                        console.error('Error during sign in:', error);
+                        showNotification(`Sign in failed: ${error.message}`, 'error');
+                    });
+            });
+
+            // Sign Out Button
+            document.getElementById('googleSignOut').addEventListener('click', function() {
+                firebase.auth().signOut()
+                    .then(() => {
+                        console.log('User signed out');
+                        document.getElementById('googleSignIn').style.display = 'inline-flex';
+                        document.getElementById('googleSignOut').style.display = 'none';
+                        showNotification('Successfully signed out. Come back soon! 👋');
+                        renderEmptyState('Please sign in to view your products');
+                        allProducts = [];
+                        filteredProducts = [];
+                    })
+                    .catch((error) => {
+                        console.error('Error during sign out:', error);
+                        showNotification('Sign out failed. Please try again.', 'error');
+                    });
+            });
+
+            // Auth State Observer
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    console.log('User is signed in:', user);
+                    document.getElementById('googleSignIn').style.display = 'none';
+                    document.getElementById('googleSignOut').style.display = 'inline-flex';
+                    fetchProducts();
+                } else {
+                    console.log('User is signed out');
+                    document.getElementById('googleSignIn').style.display = 'inline-flex';
+                    document.getElementById('googleSignOut').style.display = 'none';
+                    renderEmptyState('Please sign in to manage your products');
+                }
+            });
+
+            // Form submission on Enter key
+            document.getElementById('productForm').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.target.type !== 'textarea') {
+                    e.preventDefault();
+                    const isEditing = document.getElementById('updateBtn').style.display !== 'none';
+                    if (isEditing) {
+                        updateProduct();
+                    } else {
+                        addProduct();
+                    }
+                }
+            });
+
+            // Add CSS for fadeOut animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeOut {
+                    from { opacity: 1; transform: translateX(0); }
+                    to { opacity: 0; transform: translateX(-30px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Add some performance optimizations
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Debounce search function
+        const debouncedSearch = debounce(() => {
+            searchProducts();
+        }, 300);
+
+        // Update search input to use debounced function
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', debouncedSearch);
+        });
+    </script>
+</body>
+</html>
